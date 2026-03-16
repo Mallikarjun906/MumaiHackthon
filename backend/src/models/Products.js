@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema(
     },
     price: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 0 },
-    description: { type: String, required: true },
+    description: { type: String },
     image: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
   },

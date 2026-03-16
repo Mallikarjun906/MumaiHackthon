@@ -6,13 +6,15 @@ const upload = require("../middlewares/upload");
 
 /* ---------------- ADD PRODUCT ---------------- */
 
-router.post("/", upload.single("image"), async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    console.log(req.body);
+
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
 
     const { name, category, price, quantity, description } = req.body;
 
-    const image = req.file ? `/uploads/${req.file.filename}` : "";
+    const image = req.file ? `/uploads/${req.file.filename}` : '';
 
     const product = await Product.create({
       name,
@@ -20,14 +22,16 @@ router.post("/", upload.single("image"), async (req, res) => {
       price,
       quantity,
       description,
-      image,
+      image
     });
 
     res.status(201).json({
       message: "Product added successfully",
-      product,
+      product
     });
+
   } catch (err) {
+    console.error(err);   // <-- important
     res.status(500).json({ message: err.message });
   }
 });
