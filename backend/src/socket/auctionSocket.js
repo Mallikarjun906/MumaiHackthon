@@ -1,34 +1,80 @@
-const Bid = require("../models/Bid");
-const Crop = require("../models/Crop");
+const Auction = require("../models/Auction");
 
-module.exports = (io)=>{
+module.exports = (io) => {
 
-io.on("connection",(socket)=>{
+  io.on("connection", (socket) => {
 
-console.log("User Connected");
+    console.log("User connected:", socket.id);
 
-socket.on("placeBid",async(data)=>{
+    socket.on("placeBid", async (data) => {
 
-const {cropId,buyerId,bidAmount} = data;
+      try {
 
-const bid = new Bid({
+        const { auctionId, amount, bidder } = data;
 
-cropId,
-buyerId,
-bidAmount
+        if (!auctionId || !amount) {
+          socket.emit("bidError", "Invalid bid data");
+          return;
+        }
 
-});
+        const auction = await Auction.findById(auctionId);
 
-await bid.save();
+        if (!auction) {
+          socket.emit("bidError", "Auction not found");
+          return;
+        }
 
-await Crop.findByIdAndUpdate(cropId,{
-currentBid:bidAmount
-});
+        // Initialize highestBid if empty
+        if (!auction.highestBid) {
+          auction.highestBid = auction.basePrice;
+        }
 
-io.emit("newBid",data);
+        // Check auction time
+        if (new Date() > new Date(auction.endTime)) {
+          socket.emit("bidError", "Auction closed");
+          return;
+        }
 
-});
+        // Ensure bid is higher
+        if (amount <= auction.highestBid) {
+          socket.emit("bidError", "Bid must be higher than current highest bid");
+          return;
+        }
 
-});
+        // Update auction
+        auction.highestBid = amount;
+        auction.highestBidder = bidder;
+
+        await auction.save();
+
+        const bidData = {
+          auctionId: auction._id.toString(),
+          amount: auction.highestBid,
+          bidder: auction.highestBidder,
+          highestBid: auction.highestBid,
+          highestBidder: auction.highestBidder,
+          time: new Date().toLocaleTimeString()
+        };
+
+        // Send update to all connected users
+        io.emit("newBid", bidData);
+
+        console.log("New bid:", bidData);
+
+      } catch (error) {
+
+        console.error("Socket bid error:", error);
+
+        socket.emit("bidError", "Server error placing bid");
+
+      }
+
+    });
+
+    socket.on("disconnect", () => {
+      console.log("User disconnected:", socket.id);
+    });
+
+  });
 
 };
