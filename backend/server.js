@@ -12,6 +12,7 @@ const authRoutes = require("./src/routes/authRoutes");
 const cropRoutes = require("./src/routes/cropRoutes");
 const fertilizerRoutes = require("./src/routes/fertilizerRoutes");
 const orderRoutes = require("./src/routes/orderRoutes");
+const auctionRoutes = require("./src/routes/auctionRoutes");
 
 // Socket
 const auctionSocket = require("./src/socket/auctionSocket");
@@ -36,6 +37,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/crops", cropRoutes);
 app.use("/api/fertilizers", fertilizerRoutes);
 app.use("/api/orders", orderRoutes);
+
+
+app.use("/api/auction", auctionRoutes);
 
 /* ================= SERVER + SOCKET ================= */
 
