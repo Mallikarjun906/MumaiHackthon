@@ -15,6 +15,8 @@ const authRoutes = require("./src/routes/authRoutes");
 const cropRoutes = require("./src/routes/cropRoutes");
 const fertilizerRoutes = require("./src/routes/fertilizerRoutes");
 const orderRoutes = require("./src/routes/orderRoutes");
+const productRoutes = require("./src/routes/productRoutes");
+const notificationRoutes = require("./src/routes/notificationRoutes");
 
 // Socket
 const auctionSocket = require("./src/socket/auctionSocket");
@@ -34,6 +36,8 @@ app.use("/api/auth",authRoutes);
 app.use("/api/crops",cropRoutes);
 app.use("/api/fertilizers",fertilizerRoutes);
 app.use("/api/orders",orderRoutes);
+app.use("/api/products",productRoutes);
+app.use("/api/notifications",notificationRoutes);
 
 const server = http.createServer(app);
 

@@ -1,19 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const Product = require('../models/Products');
-const upload = require('../middlewares/upload');
+const Product = require("../models/Products");
+const upload = require("../middlewares/upload");
 
 /* ---------------- ADD PRODUCT ---------------- */
 
-router.post('/', upload.single('image'), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-
     console.log(req.body);
 
-    const {name, category, price, quantity, description } = req.body;
+    const { name, category, price, quantity, description } = req.body;
 
-    const image = req.file ? `/uploads/${req.file.filename}` : '';
+    const image = req.file ? `/uploads/${req.file.filename}` : "";
 
     const product = await Product.create({
       name,
@@ -21,43 +20,35 @@ router.post('/', upload.single('image'), async (req, res) => {
       price,
       quantity,
       description,
-      image
+      image,
     });
 
     res.status(201).json({
       message: "Product added successfully",
-      product
+      product,
     });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 
-/* ---------------- GET DEALER PRODUCTS ---------------- */
+//* ---------------- GET ALL PRODUCTS ---------------- */
 
-// router.get('/dealer/:dealerId', async (req, res) => {
-//   try {
+router.get("/", async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
 
-//     const dealerId = req.params.dealerId;
-
-//     const products = await Product.find({ dealer: dealerId })
-//       .sort({ createdAt: -1 });
-
-//     res.json(products);
-
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 /* ---------------- UPDATE PRODUCT ---------------- */
 
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
-
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -80,20 +71,17 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 
     res.json({
       message: "Product updated successfully",
-      product
+      product,
     });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-
 /* ---------------- DELETE PRODUCT ---------------- */
 
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
-
     const product = await Product.findByIdAndDelete(req.params.id);
 
     if (!product) {
@@ -101,13 +89,11 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.json({
-      message: "Product deleted successfully"
+      message: "Product deleted successfully",
     });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 module.exports = router;
