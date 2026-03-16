@@ -27,7 +27,8 @@ setCrops(cropsRes.data)
 setAuctions(auctionRes.data)
 setOrders(ordersRes.data)
 
-}catch(err){
+}catch(err)
+{
 console.log("Error fetching dashboard data")
 }
 
