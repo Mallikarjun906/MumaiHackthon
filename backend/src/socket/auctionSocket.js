@@ -1,34 +1,21 @@
-const Bid = require("../models/Bid");
-const Crop = require("../models/Crop");
+module.exports = (io) => {
 
-module.exports = (io)=>{
+  io.on("connection", (socket) => {
 
-io.on("connection",(socket)=>{
+    console.log("User connected:", socket.id);
 
-console.log("User Connected");
+    socket.on("placeBid", (data) => {
 
-socket.on("placeBid",async(data)=>{
+      io.emit("bidUpdate", data);
 
-const {cropId,buyerId,bidAmount} = data;
+    });
 
-const bid = new Bid({
+    socket.on("disconnect", () => {
 
-cropId,
-buyerId,
-bidAmount
+      console.log("User disconnected:", socket.id);
 
-});
+    });
 
-await bid.save();
-
-await Crop.findByIdAndUpdate(cropId,{
-currentBid:bidAmount
-});
-
-io.emit("newBid",data);
-
-});
-
-});
+  });
 
 };

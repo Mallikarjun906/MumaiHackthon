@@ -1,13 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
 
-const FarmerDashboard = () => {
+const CreateAuction = () => {
 
-const [cropName,setCropName] = useState("");
-const [quantity,setQuantity] = useState("");
-const [basePrice,setBasePrice] = useState("");
+const [cropName,setCropName] = useState("")
+const [quantity,setQuantity] = useState("")
+const [basePrice,setBasePrice] = useState("")
 
-const createAuction = async ()=>{
+const createAuction = async()=>{
 
 try{
 
@@ -20,7 +20,7 @@ basePrice
 }
 )
 
-alert("Auction Created Successfully")
+alert("Auction Created")
 
 }catch(err){
 
@@ -35,30 +35,26 @@ return (
 <div className="min-h-screen bg-gray-100 p-8">
 
 <h1 className="text-3xl font-bold mb-6">
-🌾 Farmer Dashboard
+Create Crop Auction
 </h1>
 
-<div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-
-<h2 className="text-xl font-semibold mb-4">
-Create Crop Auction
-</h2>
+<div className="bg-white p-6 rounded shadow max-w-md">
 
 <input
 placeholder="Crop Name"
-className="w-full border p-3 rounded mb-3"
+className="border p-3 rounded w-full mb-3"
 onChange={(e)=>setCropName(e.target.value)}
 />
 
 <input
 placeholder="Quantity"
-className="w-full border p-3 rounded mb-3"
+className="border p-3 rounded w-full mb-3"
 onChange={(e)=>setQuantity(e.target.value)}
 />
 
 <input
 placeholder="Base Price"
-className="w-full border p-3 rounded mb-3"
+className="border p-3 rounded w-full mb-3"
 onChange={(e)=>setBasePrice(e.target.value)}
 />
 
@@ -77,4 +73,4 @@ Create Auction
 
 }
 
-export default FarmerDashboard
+export default CreateAuction

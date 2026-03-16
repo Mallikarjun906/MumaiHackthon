@@ -13,7 +13,7 @@ description:""
 const addProduct = async ()=>{
 
 await axios.post(
-"http://localhost:5000/api/fertilizers/add",
+"http://localhost:5001/api/fertilizers/add",
 product
 )
 
