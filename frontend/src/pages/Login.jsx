@@ -19,13 +19,22 @@ try{
 
 const res = await axios.post(
 "http://localhost:5000/api/auth/login",
-{ email, password }
+{
+email,
+password
+}
 )
 
-const user = res.data
+// backend response
+const data = res.data
 
-localStorage.setItem("token",user.token)
+// store token
+localStorage.setItem("token", data.token)
 
+// get role
+const role = data.user.role
+
+// role based routes
 const roleRoutes = {
 farmer:"/farmer",
 buyer:"/buyer",
@@ -33,11 +42,12 @@ dealer:"/dealer",
 admin:"/admin"
 }
 
-navigate(roleRoutes[user.role] || "/")
+// redirect
+navigate(roleRoutes[role] || "/")
 
 }catch(err){
 
-alert("Login failed")
+alert(err.response?.data?.message || "Login failed")
 
 }
 
@@ -71,7 +81,6 @@ Connecting farmers, buyers and dealers
 
 </div>
 
-
 {/* LOGIN FORM */}
 
 <div className="flex-1 flex items-center justify-center bg-gray-100">
@@ -94,6 +103,7 @@ placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
 className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+required
 />
 
 <input
@@ -102,6 +112,7 @@ placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
 className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+required
 />
 
 <button
@@ -120,7 +131,10 @@ className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 tra
 
 Don't have an account?
 
-<Link to="/register" className="text-green-600 font-semibold ml-1">
+<Link
+to="/register"
+className="text-green-600 font-semibold ml-1 hover:underline"
+>
 Create account
 </Link>
 

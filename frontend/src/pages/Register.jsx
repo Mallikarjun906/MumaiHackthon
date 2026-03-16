@@ -26,13 +26,14 @@ await axios.post(
 { name,email,password,role }
 );
 
-alert("Account created successfully");
+alert("OTP sent to your email");
 
-navigate("/login");
+// go to OTP verification page
+navigate("/verify-otp", { state: { email } });
 
 }catch(err){
 
-alert("Registration failed");
+alert(err.response?.data?.message || "Registration failed");
 
 }
 
@@ -87,7 +88,6 @@ Start trading crops and growing your agri business today
 
 </div>
 
-
 {/* RIGHT FORM */}
 
 <div className="flex-1 flex items-center justify-center p-6 md:p-12">
@@ -120,10 +120,10 @@ placeholder="Full name"
 value={name}
 onChange={(e)=>setName(e.target.value)}
 className="w-full border rounded-lg py-3 pl-10 pr-3 focus:ring-2 focus:ring-green-500 outline-none"
+required
 />
 
 </div>
-
 
 {/* EMAIL */}
 
@@ -137,10 +137,10 @@ placeholder="Email address"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
 className="w-full border rounded-lg py-3 pl-10 pr-3 focus:ring-2 focus:ring-green-500 outline-none"
+required
 />
 
 </div>
-
 
 {/* PASSWORD */}
 
@@ -154,12 +154,12 @@ placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
 className="w-full border rounded-lg py-3 pl-10 pr-3 focus:ring-2 focus:ring-green-500 outline-none"
+required
 />
 
 </div>
 
-
-{/* ROLE SELECT */}
+{/* ROLE */}
 
 <div>
 
@@ -204,7 +204,6 @@ role===r.value
 </div>
 
 </div>
-
 
 {/* SUBMIT */}
 
