@@ -1,18 +1,37 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
+    name: String,
 
-  name:String,
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
 
-  email:String,
+    password: String,
 
-  password:String,
+    role: {
+      type: String,
+      enum: ["farmer", "buyer", "dealer"],
+      required: true,
+    },
 
-  role:{
-    type:String,
-    enum:["farmer","buyer","dealer","admin"]
-  }
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
 
-});
+    otp: {
+      type: String,
+    },
 
-module.exports = mongoose.model("User",userSchema);
+    otpExpire: {
+      type: Date,
+    },
+  },
+  { timestamps: true },
+);
+
+module.exports = mongoose.model("User", userSchema);
