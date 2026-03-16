@@ -12,6 +12,7 @@ import VerifyOTP from "./pages/VerifyOTP";
 
 import CreateAuction from "./pages/CreateAuction"
 import MarketPrice from "./pages/MarketPrice"
+import LandingPage from "./pages/LandingPage";
 
 
 
@@ -23,7 +24,7 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage  />} />
          <Route path="/login" element={<Login />} />
 
         <Route path="/farmer" element={<FarmerDashboard />} />
@@ -44,7 +45,9 @@ function App() {
         <Route path="/auction" element={<AuctionPage />} />
        <Route path="/create-auction" element={<CreateAuction />} />
        <Route path="/market-price" element={<MarketPrice />} />
-
+         <Route path="/" element={<LandingPage />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );

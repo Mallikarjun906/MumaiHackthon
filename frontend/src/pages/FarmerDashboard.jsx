@@ -6,93 +6,90 @@ const FarmerDashboard = () => {
 const [cropName,setCropName] = useState("")
 const [quantity,setQuantity] = useState("")
 const [basePrice,setBasePrice] = useState("")
-const [loading,setLoading] = useState(false)
+const [farmerName,setFarmerName] = useState("")
+const [farmerPhone,setFarmerPhone] = useState("")
+const [startTime,setStartTime] = useState("")
+const [endTime,setEndTime] = useState("")
 
-const createAuction = async (e)=>{
-
-e.preventDefault()
-setLoading(true)
-
-try{
+const createAuction = async () => {
 
 await axios.post(
 "http://localhost:5001/api/auction/create",
 {
 cropName,
 quantity,
-basePrice
+basePrice,
+farmerName,
+farmerPhone,
+startTime,
+endTime
 }
 )
 
-alert("Auction created successfully")
-
-setCropName("")
-setQuantity("")
-setBasePrice("")
-
-}catch(err){
-
-alert("Error creating auction")
-
-}
-
-setLoading(false)
+alert("Auction Created")
 
 }
 
 return (
 
-<div className="min-h-screen bg-gray-100 p-8">
+<div className="p-8">
 
 <h1 className="text-3xl font-bold mb-6">
-Farmer Dashboard
+Create Auction
 </h1>
 
-<div className="bg-white p-8 rounded-xl shadow max-w-md">
-
-<h2 className="text-xl font-bold mb-4">
-Create Crop Auction
-</h2>
-
-<form onSubmit={createAuction} className="space-y-4">
+<input
+placeholder="Farmer Name"
+onChange={(e)=>setFarmerName(e.target.value)}
+className="border p-2 w-full mb-3"
+/>
 
 <input
-type="text"
+placeholder="Farmer Phone"
+onChange={(e)=>setFarmerPhone(e.target.value)}
+className="border p-2 w-full mb-3"
+/>
+
+<input
 placeholder="Crop Name"
-value={cropName}
 onChange={(e)=>setCropName(e.target.value)}
-className="w-full border p-3 rounded"
+className="border p-2 w-full mb-3"
 />
 
 <input
-type="number"
-placeholder="Quantity (kg)"
-value={quantity}
+placeholder="Quantity"
 onChange={(e)=>setQuantity(e.target.value)}
-className="w-full border p-3 rounded"
+className="border p-2 w-full mb-3"
 />
 
 <input
-type="number"
-placeholder="Base Price (₹)"
-value={basePrice}
+placeholder="Base Price"
 onChange={(e)=>setBasePrice(e.target.value)}
-className="w-full border p-3 rounded"
+className="border p-2 w-full mb-3"
+/>
+
+<label>Start Time</label>
+
+<input
+type="datetime-local"
+onChange={(e)=>setStartTime(e.target.value)}
+className="border p-2 w-full mb-3"
+/>
+
+<label>End Time</label>
+
+<input
+type="datetime-local"
+onChange={(e)=>setEndTime(e.target.value)}
+className="border p-2 w-full mb-3"
 />
 
 <button
-type="submit"
-disabled={loading}
-className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
+onClick={createAuction}
+className="bg-green-600 text-white p-3 rounded w-full"
 >
-
-{loading ? "Creating..." : "Create Auction"}
-
+Create Auction
 </button>
-
-</form>
-
-</div>
 
 </div>
 

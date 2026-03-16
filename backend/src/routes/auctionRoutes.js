@@ -6,10 +6,10 @@ const Auction = require("../models/Auction");
 router.post("/create", async (req, res) => {
 
   const start = new Date();
-  start.setHours(12,0,0);
+  start.setHours(18,0,0);
 
   const end = new Date();
-  end.setHours(15,0,0);
+  end.setHours(22,0,0);
 
   const auction = new Auction({
     cropName:req.body.cropName,
