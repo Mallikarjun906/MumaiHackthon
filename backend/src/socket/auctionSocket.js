@@ -56,6 +56,16 @@ module.exports = (io) => {
           time: new Date().toLocaleTimeString()
         };
 
+
+        io.on("connection",(socket)=>{
+
+socket.on("placeBid",(data)=>{
+
+io.emit("newBid",data)
+
+})
+
+})
         // Send update to all connected users
         io.emit("newBid", bidData);
 

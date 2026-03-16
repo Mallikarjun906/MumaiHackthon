@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
@@ -29,18 +29,9 @@ const fertilizers = [
 ];
 
 const schemes = [
-  {
-    title: "PM-KISAN Samman Nidhi",
-    desc: "Direct income support of ₹6,000/year to farmer families."
-  },
-  {
-    title: "Pradhan Mantri Fasal Bima Yojana",
-    desc: "Crop insurance scheme providing financial support to farmers."
-  },
-  {
-    title: "Kisan Credit Card",
-    desc: "Provides farmers with affordable credit."
-  }
+  { title: "PM-KISAN Samman Nidhi", desc: "Direct income support of ₹6,000/year to farmers." },
+  { title: "Pradhan Mantri Fasal Bima Yojana", desc: "Crop insurance scheme providing financial support." },
+  { title: "Kisan Credit Card", desc: "Affordable credit support for farmers." }
 ];
 
 export default function LandingPage() {
@@ -71,70 +62,84 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-white to-green-50">
 
       {/* NAVBAR */}
 
-      <header className="border-b bg-white sticky top-0 z-50">
+      <header className="sticky top-0 backdrop-blur-lg bg-white/80 border-b z-50">
+
         <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
 
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <Sprout className="text-green-600" />
+          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-green-700">
+            <Sprout />
             Smart Agri Market
           </Link>
 
-          <nav className="hidden md:flex gap-6 text-gray-600">
-            <a href="#market">Market Rates</a>
-            <a href="#fertilizers">Fertilizers</a>
-            <a href="#schemes">Schemes</a>
-            <a href="#disease">AI Detector</a>
+          <nav className="hidden md:flex gap-8 text-gray-600 font-medium">
+            <a href="#market" className="hover:text-green-600">Market</a>
+            <a href="#fertilizers" className="hover:text-green-600">Fertilizers</a>
+            <a href="#schemes" className="hover:text-green-600">Schemes</a>
+            <a href="#disease" className="hover:text-green-600">AI Detector</a>
           </nav>
 
           <div className="flex gap-3">
-            <Link to="/login" className="px-4 py-2 border rounded">
+
+            <Link
+              to="/login"
+              className="px-4 py-2 rounded-lg border hover:bg-gray-100 transition"
+            >
               Login
             </Link>
 
-            <Link to="/register" className="px-4 py-2 bg-green-600 text-white rounded">
+            <Link
+              to="/register"
+              className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+            >
               Register
             </Link>
+
           </div>
 
         </div>
+
       </header>
 
       {/* HERO */}
 
-      <section className="text-center py-20 bg-green-50">
+      <section className="py-28 text-center bg-gradient-to-br from-green-600 to-emerald-500 text-white">
 
-        <h1 className="text-5xl font-bold mb-4">
+        <motion.h1
+          initial={{ opacity:0, y:30 }}
+          animate={{ opacity:1, y:0 }}
+          className="text-5xl md:text-6xl font-bold mb-6"
+        >
           Smart Agriculture Marketplace
-        </h1>
+        </motion.h1>
 
-        <p className="text-gray-600 mb-8">
-          Real-time crop auctions, fertilizer marketplace, and AI crop disease detection.
+        <p className="max-w-xl mx-auto text-lg opacity-90 mb-10">
+          Real-time crop auctions, fertilizer marketplace and AI powered crop disease detection.
         </p>
 
         <Link
           to="/register"
-          className="bg-green-600 text-white px-6 py-3 rounded inline-flex items-center gap-2"
+          className="bg-white text-green-700 px-8 py-3 rounded-xl font-semibold inline-flex items-center gap-2 hover:scale-105 transition"
         >
-          Start Selling <ArrowRight />
+          Start Selling <ArrowRight size={18}/>
         </Link>
 
       </section>
 
-      {/* MARKET RATES */}
+      {/* MARKET */}
 
-      <section id="market" className="max-w-7xl mx-auto py-16 px-4">
+      <section id="market" className="max-w-7xl mx-auto py-20 px-4">
 
-        <h2 className="text-3xl font-bold mb-8 text-center">
+        <h2 className="text-3xl font-bold text-center mb-12">
           Today's Market Rates
         </h2>
 
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-4 gap-6">
 
-          {marketRates.map((item, i) => (
+          {marketRates.map((item,i)=>(
 
             <motion.div
               key={i}
@@ -142,20 +147,25 @@ export default function LandingPage() {
               initial="hidden"
               animate="visible"
               custom={i}
-              className="border rounded p-4 flex justify-between"
+              className="p-6 rounded-xl shadow-md bg-white hover:shadow-xl transition"
             >
 
-              <div>
-                <h3 className="font-bold">{item.crop}</h3>
-                <p className="text-gray-500 text-sm">Per Quintal</p>
+              <div className="flex justify-between">
+
+                <div>
+                  <h3 className="font-semibold">{item.crop}</h3>
+                  <p className="text-sm text-gray-500">Per Quintal</p>
+                </div>
+
+                <TrendingUp className="text-green-600"/>
+
               </div>
 
-              <div className="text-right">
-                <p className="font-bold">{item.price}</p>
-                <p className={item.up ? "text-green-600" : "text-red-500"}>
-                  {item.change}
-                </p>
-              </div>
+              <p className="mt-4 text-xl font-bold">{item.price}</p>
+
+              <p className={item.up ? "text-green-600" : "text-red-500"}>
+                {item.change}
+              </p>
 
             </motion.div>
 
@@ -167,29 +177,32 @@ export default function LandingPage() {
 
       {/* FERTILIZERS */}
 
-      <section id="fertilizers" className="bg-gray-50 py-16">
+      <section id="fertilizers" className="py-20 bg-white">
 
         <div className="max-w-7xl mx-auto px-4">
 
-          <h2 className="text-3xl font-bold mb-8 text-center">
+          <h2 className="text-3xl font-bold text-center mb-12">
             Fertilizer Marketplace
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8">
 
-            {fertilizers.map((f, i) => (
+            {fertilizers.map((f,i)=>(
 
-              <div key={i} className="border rounded p-5">
+              <div
+                key={i}
+                className="p-6 bg-gradient-to-b from-white to-green-50 border rounded-xl shadow hover:shadow-lg transition"
+              >
 
-                <FlaskConical className="mb-2"/>
+                <FlaskConical className="text-green-600 mb-3"/>
 
-                <h3 className="font-bold">{f.name}</h3>
+                <h3 className="font-semibold">{f.name}</h3>
 
                 <p className="text-gray-500">{f.brand}</p>
 
-                <p className="font-bold mt-2">{f.price}</p>
+                <p className="mt-3 font-bold text-lg">{f.price}</p>
 
-                <button className="mt-3 bg-green-600 text-white px-4 py-2 rounded w-full">
+                <button className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
                   Buy
                 </button>
 
@@ -203,84 +216,98 @@ export default function LandingPage() {
 
       </section>
 
-      {/* GOVERNMENT SCHEMES */}
+      {/* SCHEMES */}
 
-      <section id="schemes" className="max-w-7xl mx-auto py-16 px-4">
+      <section id="schemes" className="py-20">
 
-        <h2 className="text-3xl font-bold text-center mb-10">
-          Government Schemes
-        </h2>
+        <div className="max-w-7xl mx-auto px-4">
 
-        <div className="grid md:grid-cols-3 gap-6">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Government Schemes
+          </h2>
 
-          {schemes.map((s, i) => (
+          <div className="grid md:grid-cols-3 gap-8">
 
-            <div key={i} className="border rounded p-6">
+            {schemes.map((s,i)=>(
 
-              <Leaf className="mb-2"/>
+              <div
+                key={i}
+                className="p-6 bg-white border rounded-xl shadow hover:shadow-lg transition"
+              >
 
-              <h3 className="font-bold">{s.title}</h3>
+                <Leaf className="text-green-600 mb-3"/>
 
-              <p className="text-gray-600 text-sm mt-2">
-                {s.desc}
-              </p>
+                <h3 className="font-semibold">{s.title}</h3>
 
-            </div>
+                <p className="text-gray-600 mt-2 text-sm">
+                  {s.desc}
+                </p>
 
-          ))}
+              </div>
+
+            ))}
+
+          </div>
 
         </div>
 
       </section>
 
-      {/* AI DISEASE DETECTOR */}
+      {/* AI DETECTOR */}
 
-      <section id="disease" className="bg-gray-50 py-16">
+      <section id="disease" className="py-20 bg-gray-50">
 
-        <div className="max-w-4xl mx-auto text-center px-4">
+        <div className="max-w-xl mx-auto text-center">
 
           <h2 className="text-3xl font-bold mb-6">
             AI Crop Disease Detector
           </h2>
 
-          <input type="file" onChange={handleImageUpload} />
+          <div className="p-6 bg-white rounded-xl shadow">
 
-          {selectedImage && (
-            <img src={selectedImage} className="mx-auto mt-6 h-40 rounded"/>
-          )}
+            <Upload className="mx-auto text-green-600 mb-3"/>
 
-          {selectedImage && (
+            <input type="file" onChange={handleImageUpload}/>
 
-            <button
-              onClick={analyzeImage}
-              className="mt-4 bg-green-600 text-white px-5 py-2 rounded"
-            >
-              Detect Disease
-            </button>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                className="mx-auto mt-4 h-40 rounded-lg"
+              />
+            )}
 
-          )}
+            {selectedImage && (
 
-          {analyzing && <p className="mt-4">Analyzing...</p>}
+              <button
+                onClick={analyzeImage}
+                className="mt-4 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"
+              >
+                Detect Disease
+              </button>
 
-          {result && (
+            )}
 
-            <div className="mt-6 border rounded p-4">
+            {analyzing && <p className="mt-3">Analyzing...</p>}
 
-              <p className="font-bold text-red-600">
-                {result.disease}
-              </p>
+            {result && (
 
-              <p className="text-sm mt-2">
-                Confidence: {result.confidence}%
-              </p>
+              <div className="mt-4 p-4 border rounded-lg">
 
-              <p className="text-sm mt-2">
-                Remedy: {result.remedy}
-              </p>
+                <p className="font-bold text-red-600">{result.disease}</p>
 
-            </div>
+                <p className="text-sm mt-1">
+                  Confidence: {result.confidence}%
+                </p>
 
-          )}
+                <p className="text-sm mt-1">
+                  Remedy: {result.remedy}
+                </p>
+
+              </div>
+
+            )}
+
+          </div>
 
         </div>
 
@@ -288,35 +315,34 @@ export default function LandingPage() {
 
       {/* FOOTER */}
 
-      <footer className="bg-black text-white py-10">
+      <footer className="bg-gray-900 text-white py-12">
 
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 px-4">
 
           <div>
             <h3 className="font-bold text-xl mb-2">
               Smart Agri Market
             </h3>
+
             <p className="text-gray-400 text-sm">
               Empowering farmers with technology.
             </p>
           </div>
 
           <div>
-            <h4 className="font-bold mb-2">Contact</h4>
+            <h4 className="font-semibold mb-3">Contact</h4>
 
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2 text-sm">
               <Phone size={16}/> 1800‑000‑000
             </p>
 
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2 text-sm mt-2">
               <Mail size={16}/> support@agri.com
             </p>
           </div>
 
-          <div>
-            <p className="text-gray-400 text-sm">
-              © 2026 Smart Agri Market
-            </p>
+          <div className="text-gray-400 text-sm">
+            © 2026 Smart Agri Market
           </div>
 
         </div>
