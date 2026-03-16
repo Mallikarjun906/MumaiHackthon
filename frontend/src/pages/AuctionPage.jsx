@@ -6,21 +6,17 @@ import {
 Chart as ChartJS,
 CategoryScale,
 LinearScale,
-TimeScale,
+BarElement,
 Tooltip,
 Legend
 } from "chart.js";
 
-import { CandlestickController, CandlestickElement } from "chartjs-chart-financial";
-import "chartjs-adapter-date-fns";
-import { Chart } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 
 ChartJS.register(
 CategoryScale,
 LinearScale,
-TimeScale,
-CandlestickController,
-CandlestickElement,
+BarElement,
 Tooltip,
 Legend
 );
@@ -56,14 +52,6 @@ setLiveBids(prev=>[bid,...prev])
 setHighestBid(bid.amount)
 setHighestBidder(bid.bidder)
 
-if(selectedAuction){
-setSelectedAuction(prev=>({
-...prev,
-highestBid:bid.amount,
-highestBidder:bid.bidder
-}))
-}
-
 setCandleData(prev=>[
 ...prev,
 {
@@ -79,7 +67,8 @@ c:bid.amount
 
 return ()=>socket.off("newBid")
 
-},[selectedAuction])
+},[])
+
 
 /* TIMER */
 
@@ -111,6 +100,8 @@ return ()=>clearInterval(timer)
 
 },[selectedAuction])
 
+
+
 /* FETCH AUCTIONS */
 
 const fetchAuctions = async()=>{
@@ -131,70 +122,126 @@ console.log("Error fetching auctions")
 
 }
 
-/* PLACE BID */
 
-const placeBid = async()=>{
+/* JOIN AUCTION */
 
-const amount = Number(bidAmount)
+const joinAuction = async (auction) => {
 
-if(!amount) return
+setSelectedAuction(auction)
+
+setHighestBid(auction.highestBid)
+setHighestBidder(auction.highestBidder)
 
 try{
 
-await axios.post(
-`http://localhost:5001/api/auction/bid/${selectedAuction._id}`,
-{
-bid:amount,
-bidder:user?.name || "Buyer"
-}
+// fetch existing bids
+const res = await axios.get(
+`http://localhost:5001/api/auction/bids/${auction._id}`
 )
 
-socket.emit("placeBid",{
-auctionId:selectedAuction._id,
-amount,
-bidder:user?.name || "Buyer"
-})
-
-setBidAmount("")
+setLiveBids(res.data)
 
 }catch(err){
+console.log("Error fetching bids")
+}
 
-console.log("Bid failed")
+setCandleData([
+{
+x:new Date(),
+o:auction.basePrice,
+h:auction.basePrice,
+l:auction.basePrice,
+c:auction.basePrice
+}
+])
 
 }
 
+/* PLACE BID */
+
+/* PLACE BID */
+
+const placeBid = async () => {
+
+  const amount = Number(bidAmount)
+  if(!amount) return
+
+  try{
+
+    const res = await axios.post(
+      `http://localhost:5001/api/auction/bid/${selectedAuction._id}`,
+      {
+        bid: amount,
+        bidder: user?.name || "Buyer"
+      }
+    )
+
+    const bidData = {
+      bidder: res.data?.bid?.bidder || user?.name || "Buyer",
+      amount: res.data?.bid?.amount || amount,
+      time: res.data?.bid?.time || new Date().toLocaleTimeString()
+    }
+
+    setLiveBids(prev => [bidData, ...prev])
+
+    setHighestBid(bidData.amount)
+    setHighestBidder(bidData.bidder)
+
+    setCandleData(prev => {
+
+const lastClose = prev.length ? prev[prev.length-1].c : bidData.amount
+
+return [
+...prev,
+{
+x: new Date(),
+o: lastClose,
+h: Math.max(lastClose, bidData.amount),
+l: Math.min(lastClose, bidData.amount),
+c: bidData.amount
+}
+]
+
+})
+
+    socket.emit("placeBid", bidData)
+
+    setBidAmount("")
+
+  }catch(err){
+
+    console.log("Bid failed", err)
+
+  }
+
 }
 
-const checkAuctionClosed=(endTime)=>{
-return new Date(endTime) < new Date()
+const checkAuctionClosed = (endTime) => {
+  if (!endTime) return false
+  return new Date(endTime) < new Date()
 }
 
 /* CHART DATA */
 
 const chartData = {
-datasets:[
+labels: liveBids.map(bid => bid.time),
+datasets: [
 {
-label:"Live Auction Price",
-data:candleData,
-borderColor:"green",
-color:{
-up:"#16a34a",
-down:"#dc2626",
-unchanged:"#999"
-}
+label: "Bid Price",
+data: liveBids.map(bid => bid.amount),
+backgroundColor: "rgba(34,197,94,0.7)"
 }
 ]
 }
 
-const options={
-responsive:true,
+const options = {
+responsive: true,
 plugins:{
 legend:{display:true}
 },
 scales:{
-x:{
-type:"time",
-time:{unit:"minute"}
+y:{
+beginAtZero:true
 }
 }
 }
@@ -269,8 +316,7 @@ Back
 Live Trading Chart
 </h3>
 
-<Chart
-type="candlestick"
+<Bar
 data={chartData}
 options={options}
 />
@@ -366,25 +412,7 @@ Live Auction
 )}
 
 <button
-onClick={()=>{
-
-setSelectedAuction(auction)
-
-setHighestBid(auction.highestBid)
-
-setHighestBidder(auction.highestBidder)
-
-setCandleData([
-{
-x:new Date(),
-o:auction.basePrice,
-h:auction.basePrice,
-l:auction.basePrice,
-c:auction.basePrice
-}
-])
-
-}}
+onClick={()=>joinAuction(auction)}
 disabled={closed}
 className="bg-blue-600 text-white px-4 py-2 rounded mt-3 w-full disabled:bg-gray-400"
 >
