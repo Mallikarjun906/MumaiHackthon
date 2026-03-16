@@ -1,3 +1,4 @@
+
 import { Outlet, Link } from "react-router-dom";
 import { ShoppingCart, Home, TrendingUp, ArrowLeft } from "lucide-react";
 
@@ -93,3 +94,4 @@ export default function BuyerLayout() {
 
   );
 }
+
