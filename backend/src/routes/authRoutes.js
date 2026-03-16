@@ -1,54 +1,188 @@
 const express = require("express");
 const router = express.Router();
-
 const User = require("../models/User");
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
 
-router.post("/register",async(req,res)=>{
 
-const {name,email,password,role} = req.body;
+// ================= JWT TOKEN =================
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
+};
 
-const hashed = await bcrypt.hash(password,10);
 
-const user = new User({
+// ================= VALIDATIONS =================
+const isStrongPassword = (password) => {
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(password);
+};
 
-name,
-email,
-password:hashed,
-role
+const isGmail = (email) => {
+  return email.endsWith("@gmail.com");
+};
 
+
+
+// ================= REGISTER (SEND OTP) =================
+router.post("/register", async (req, res) => {
+  try {
+
+    const { name, email, password, role } = req.body;
+
+    // gmail validation
+    if (!isGmail(email)) {
+      return res.status(400).json({
+        message: "Only Gmail accounts are allowed",
+      });
+    }
+
+    // password validation
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain 8+ characters, uppercase, lowercase, number and special character",
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      otp,
+      otpExpire: Date.now() + 10 * 60 * 1000,
+    });
+
+    // SEND OTP EMAIL
+    await sendEmail(
+      email,
+      "OTP Verification",
+      `
+      <h2>Hello ${name}</h2>
+      <p>Your OTP for account verification is:</p>
+      <h1>${otp}</h1>
+      <p>This OTP will expire in 10 minutes.</p>
+      `
+    );
+
+    res.json({
+      message: "OTP sent to email",
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-await user.save();
 
-res.json(user);
 
+// ================= VERIFY OTP =================
+router.post("/verify-otp", async (req, res) => {
+  try {
+
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+
+    if (user.otp !== otp || user.otpExpire < Date.now()) {
+      return res.status(400).json({
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpire = null;
+
+    await user.save();
+
+    // SEND SUCCESS EMAIL
+    await sendEmail(
+      email,
+      "Registration Successful 🎉",
+      `
+      <h2>Welcome ${user.name}</h2>
+      <p>Your account has been successfully verified.</p>
+      <p>You can now login and start using the platform.</p>
+      <br>
+      <b>Your Role: ${user.role}</b>
+      `
+    );
+
+    res.json({
+      message: "Account verified successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-router.post("/login",async(req,res)=>{
 
-const {email,password} = req.body;
 
-const user = await User.findOne({email});
+// ================= LOGIN =================
+router.post("/login", async (req, res) => {
+  try {
 
-if(!user)
-return res.status(404).json({message:"User not found"});
+    const { email, password } = req.body;
 
-const match = await bcrypt.compare(password,user.password);
+    const user = await User.findOne({ email });
 
-if(!match)
-return res.status(401).json({message:"Invalid password"});
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
+    }
 
-const token = jwt.sign(
-{id:user._id,role:user.role},
-"secret",
-{expiresIn:"1d"}
-);
+    if (!user.isVerified) {
+      return res.status(400).json({
+        message: "Please verify your email first",
+      });
+    }
 
-res.json({token,role:user.role});
+    const match = await bcrypt.compare(password, user.password);
 
+    if (!match) {
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = generateToken(user._id, user.role);
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
+
 
 module.exports = router;
