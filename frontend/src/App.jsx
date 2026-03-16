@@ -9,7 +9,7 @@ import AuctionPage from "./pages/AuctionPage";
 import FertilizerMarket from "./pages/FertilizerMarket";
 import Register from "./pages/Register";
 import VerifyOTP from "./pages/VerifyOTP";
-
+import KisanSahayak from "./pages/KisanSahayak"; 
 import CreateAuction from "./pages/CreateAuction"
 import MarketPrice from "./pages/MarketPrice"
 import LandingPage from "./pages/LandingPage";
@@ -28,7 +28,8 @@ function App() {
 
         <Route path="/" element={<LandingPage  />} />
          <Route path="/login" element={<Login />} />
-
+         <Route path="/login" element={<Login />} />
+        <Route path="/government-schemes" element={<KisanSahayak />} />
         <Route path="/farmer" element={<FarmerDashboard />} />
         <Route path="/buyer" element={<BuyerDashboard />} />
         <Route path="/dealer" element={<DealerDashboard />} />
