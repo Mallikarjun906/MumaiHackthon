@@ -8,8 +8,8 @@ const BASE_URL = "http://localhost:5001/api";
 /* ═══════════════════════════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════════════════════════ */
-const CATS = ["Electronics", "Clothing", "Food", "Furniture", "Other"];
-const CAT_EMOJI = { Electronics: "🖥️", Clothing: "👕", Food: "🌾", Furniture: "🛋️", Other: "📦" };
+const CATS = ["Seeds", "Fertilizers", "Pesticides"];
+const CAT_EMOJI = { Seeds: "🌱", Fertilizers: "🧪", Pesticides: "🧴"};
 const ORDER_STATUSES = ["Pending", "Accepted", "Shipped", "Delivered", "Cancelled"];
 
 const STATUS_META = {
@@ -139,7 +139,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* ── API BANNER ── */
 .api-banner{
-  background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.2);
+  background:rgba(5, 5, 5, 0.06);
   border-radius:var(--r);padding:13px 16px;
   display:flex;align-items:center;gap:12px;margin-bottom:22px;
   font-size:13px;color:var(--amber);flex-wrap:wrap;
@@ -291,7 +291,7 @@ td{padding:13px 14px;font-size:13px;vertical-align:middle}
 .img-prev img{width:100%;max-height:120px;object-fit:cover;border-radius:9px;display:block}
 .img-rm{
   position:absolute;top:6px;right:6px;width:22px;height:22px;
-  background:rgba(0,0,0,.75);border:none;border-radius:50%;
+  background:rgba(0, 0, 0, 0.75);border:none;border-radius:50%;
   color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;
 }
 .img-rm:hover{background:var(--red)}
@@ -530,7 +530,7 @@ export default function DealerDashboard() {
     fd.append("description", form.description.trim());
     if (imgFile) fd.append("image", imgFile);
     try {
-      const url = editId ? `${apiBase}/products/${editId}` : `${apiBase}/products`;
+      const url = editId ? `${apiBase}/products/${editId}` : `${apiBase}/products/`;
       const res = await fetch(url, { method: editId ? "PUT" : "POST", body: fd });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.message || "Failed"); }
       toast(editId ? "Product updated!" : "Product added!", "success");
@@ -568,23 +568,33 @@ export default function DealerDashboard() {
      ORDER STATUS UPDATE
   ══════════════════════════════════════ */
   async function updateOrderStatus(orderId, status) {
-    setUpdatingOrder(orderId);
-    try {
-      const res = await fetch(`${apiBase}/orders/${orderId}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      toast(`Order status → ${status}`, "success");
-      setOrders(p => p.map(o => o._id === orderId ? { ...o, status } : o));
-      loadDash();
-    } catch (err) {
-      toast(err.message, "error");
-    } finally {
-      setUpdatingOrder(null);
-    }
+  setUpdatingOrder(orderId);
+
+  try {
+    const res = await fetch(`${apiBase}/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    toast(`Order status → ${status}`, "success");
+
+    setOrders((p) =>
+      p.map((o) => (o._id === orderId ? { ...o, status } : o))
+    );
+
+    loadDash();
+
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    setUpdatingOrder(null);
   }
+}
 
   /* ══════════════════════════════════════
      SAVE API URL
@@ -978,11 +988,6 @@ export default function DealerDashboard() {
             {/* API Banner */}
             {showBanner && (
               <div className="api-banner">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>Backend base URL (e.g. http://localhost:5000/api):</span>
-                <input value={apiInput} onChange={e => setApiInput(e.target.value)} onKeyDown={e => e.key === "Enter" && saveApi()} placeholder="http://localhost:5000/api" />
-                <button className="btn btn-green btn-sm" onClick={saveApi}>Connect</button>
-                <button className="btn btn-ghost btn-sm" onClick={() => setShowBanner(false)}>✕</button>
               </div>
             )}
 
