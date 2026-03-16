@@ -1,79 +1,134 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { useNavigate,Link } from "react-router-dom";
 
-function Login(){
-
-const navigate = useNavigate()
+const Login = () => {
 
 const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
+const [loading,setLoading] = useState(false)
 
-const login = async () => {
+const navigate = useNavigate()
+
+const handleSubmit = async (e) => {
+
+e.preventDefault()
+setLoading(true)
 
 try{
 
 const res = await axios.post(
 "http://localhost:5000/api/auth/login",
-{email,password}
+{ email, password }
 )
 
-localStorage.setItem("token",res.data.token)
+const user = res.data
 
-const role = res.data.role
+localStorage.setItem("token",user.token)
 
-if(role==="farmer"){
-navigate("/farmer")
+const roleRoutes = {
+farmer:"/farmer",
+buyer:"/buyer",
+dealer:"/dealer",
+admin:"/admin"
 }
 
-if(role==="buyer"){
-navigate("/buyer")
-}
-
-if(role==="dealer"){
-navigate("/dealer")
-}
-
-if(role==="admin"){
-navigate("/admin")
-}
+navigate(roleRoutes[user.role] || "/")
 
 }catch(err){
 
-alert("Login Failed")
+alert("Login failed")
 
 }
 
+setLoading(false)
+
 }
 
-return(
+return (
 
-<div style={{textAlign:"center"}}>
+<div className="min-h-screen flex">
 
-<h2>Agri Market Login</h2>
+{/* LEFT HERO SECTION */}
+
+<div className="hidden lg:flex lg:w-1/2 bg-green-600 text-white items-center justify-center p-12">
+
+<div>
+
+<div className="bg-green-500 rounded-xl px-6 py-3 mb-6 flex items-center gap-2">
+🌱
+</div>
+
+<h1 className="text-4xl font-bold mb-3">
+Smart Agri Market
+</h1>
+
+<p className="text-lg opacity-80">
+Connecting farmers, buyers and dealers
+</p>
+
+</div>
+
+</div>
+
+
+{/* LOGIN FORM */}
+
+<div className="flex-1 flex items-center justify-center bg-gray-100">
+
+<div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-md">
+
+<h2 className="text-3xl font-bold mb-2">
+Welcome Back
+</h2>
+
+<p className="text-gray-500 mb-6">
+Login to continue
+</p>
+
+<form onSubmit={handleSubmit} className="space-y-4">
 
 <input
+type="email"
 placeholder="Email"
+value={email}
 onChange={(e)=>setEmail(e.target.value)}
+className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
 />
-
-<br/><br/>
 
 <input
 type="password"
 placeholder="Password"
+value={password}
 onChange={(e)=>setPassword(e.target.value)}
+className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
 />
 
-<br/><br/>
+<button
+type="submit"
+disabled={loading}
+className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
+>
 
-<button onClick={login}>Login</button>
+{loading ? "Signing In..." : "Sign In →"}
 
-<br/><br/>
+</button>
 
-<Link to="/register">
-Create Account
+</form>
+
+<p className="text-center text-sm text-gray-500 mt-6">
+
+Don't have an account?
+
+<Link to="/register" className="text-green-600 font-semibold ml-1">
+Create account
 </Link>
+
+</p>
+
+</div>
+
+</div>
 
 </div>
 
