@@ -19,6 +19,8 @@ import LandingPage from "./pages/LandingPage";
 
 
 
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -48,6 +50,8 @@ function App() {
          <Route path="/" element={<LandingPage />} />
   <Route path="/login" element={<Login />} />
   <Route path="/register" element={<Register />} />
+ 
+
       </Routes>
     </BrowserRouter>
   );
