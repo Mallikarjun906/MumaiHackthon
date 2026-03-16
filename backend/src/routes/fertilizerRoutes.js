@@ -1,25 +1,22 @@
 const express = require("express");
-
 const router = express.Router();
 
 const Fertilizer = require("../models/Fertilizer");
 
-router.post("/add",async(req,res)=>{
+/* GET ALL FERTILIZERS */
 
-const fertilizer = new Fertilizer(req.body);
+router.get("/", async (req, res) => {
+  try {
 
-await fertilizer.save();
+    const fertilizers = await Fertilizer.find();
 
-res.json(fertilizer);
+    res.json(fertilizers);
 
-});
+  } catch (err) {
 
-router.get("/",async(req,res)=>{
+    res.status(500).json({ message: "Server Error" });
 
-const items = await Fertilizer.find();
-
-res.json(items);
-
+  }
 });
 
 module.exports = router;

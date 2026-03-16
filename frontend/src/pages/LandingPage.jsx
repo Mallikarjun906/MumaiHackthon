@@ -5,7 +5,7 @@ import {
   Sprout, Wheat, FlaskConical, TrendingUp, Leaf,
   ArrowRight, Upload, Bug, Phone, Mail
 } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i) => ({
@@ -35,7 +35,7 @@ const schemes = [
 ];
 
 export default function LandingPage() {
-
+    const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
@@ -78,8 +78,14 @@ export default function LandingPage() {
           <nav className="hidden md:flex gap-8 text-gray-600 font-medium">
             <a href="#market" className="hover:text-green-600">Market</a>
             <a href="#fertilizers" className="hover:text-green-600">Fertilizers</a>
-            <a href="#schemes" className="hover:text-green-600">Schemes</a>
-            <a href="#disease" className="hover:text-green-600">AI Detector</a>
+        
+             <button
+             
+              onClick={() => navigate("/government-schemes")}
+              className={`transition-colors hover:text-emerald-500 bg-transparent border-none cursor-pointer ? "text-gray-400" : "text-gray-600"}`}
+            >Schemes
+              
+            </button>
           </nav>
 
           <div className="flex gap-3">
@@ -221,10 +227,16 @@ export default function LandingPage() {
       <section id="schemes" className="py-20">
 
         <div className="max-w-7xl mx-auto px-4">
-
-          <h2 className="text-3xl font-bold text-center mb-12">
+ <button
+             
+              onClick={() => navigate("/government-schemes")}
+              className={`transition-colors hover:text-emerald-500 bg-transparent border-none cursor-pointer  ? "text-gray-400" : "text-gray-600"}`}
+            >
+           <h2 className="text-3xl font-bold text-center mb-12">
             Government Schemes
           </h2>
+            </button>
+          
 
           <div className="grid md:grid-cols-3 gap-8">
 

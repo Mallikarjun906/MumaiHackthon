@@ -1,94 +1,139 @@
 const express = require("express");
 const router = express.Router();
-const Auction = require("../models/Auction");
 
-// Create auction (Farmer)
+const Auction = require("../models/Auction");
+const Bid = require("../models/Bid");
+
+
+// CREATE AUCTION
 router.post("/create", async (req, res) => {
 
-  const start = new Date();
-  start.setHours(18,0,0);
+  try{
 
-  const end = new Date();
-  end.setHours(22,0,0);
+    const start = new Date();
+    start.setHours(18,0,0);
 
-  const auction = new Auction({
-    cropName:req.body.cropName,
-    quantity:req.body.quantity,
-    basePrice:req.body.basePrice,
-    highestBid:req.body.basePrice,
-    startTime:start,
-    endTime:end
-  });
+    const end = new Date();
+    end.setHours(22,0,0);
 
-  await auction.save();
+    const auction = new Auction({
+      cropName:req.body.cropName,
+      quantity:req.body.quantity,
+      basePrice:req.body.basePrice,
+      highestBid:req.body.basePrice,
+      farmerName:req.body.farmerName,
+      farmerPhone:req.body.farmerPhone,
+      startTime:start,
+      endTime:end
+    });
 
-  res.json(auction);
+    await auction.save();
+
+    res.json(auction);
+
+  }catch(error){
+    res.status(500).json({message:"Create auction error"})
+  }
+
 });
 
 
-// Place bid (Buyer)
+// PLACE BID
+router.post("/bid/:id", async (req, res) => {
 
-router.post("/bid/:id", async (req,res)=>{
+  try {
 
-const auction = await Auction.findById(req.params.id)
+    const auction = await Auction.findById(req.params.id)
 
-const now = new Date()
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" })
+    }
 
-if(now > auction.endTime){
-return res.json({message:"Auction closed"})
-}
+    const now = new Date()
 
-if(req.body.bid > auction.highestBid){
+    if (now > auction.endTime) {
+      return res.json({ message: "Auction closed" })
+    }
 
-auction.highestBid = req.body.bid
-auction.highestBidder = req.body.bidder
+    const bidAmount = Number(req.body.bid)
+    const bidder = req.body.bidder
 
-await auction.save()
+    if (bidAmount <= auction.highestBid) {
+      return res.json({
+        message:"Bid must be higher than current bid"
+      })
+    }
 
-}
+    // SAVE BID
+    const newBid = new Bid({
+      auctionId:req.params.id,
+      bidder,
+      amount:bidAmount
+    })
 
-res.json(auction)
+    await newBid.save()
+
+    // UPDATE AUCTION
+    auction.highestBid = bidAmount
+    auction.highestBidder = bidder
+
+    await auction.save()
+
+    const bidData = {
+      bidder,
+      amount:bidAmount,
+      time:new Date().toLocaleTimeString()
+    }
+
+    res.json({
+      message:"Bid placed",
+      bid:bidData
+    })
+
+  } catch (error) {
+
+    res.status(500).json({ message: "Bid error" })
+
+  }
 
 })
 
 
-// Get auctions
-
+// GET ALL AUCTIONS
 router.get("/", async(req,res)=>{
 
-try{
+  try{
 
-const auctions = await Auction.find()
+    const auctions = await Auction.find()
 
-res.json(auctions)
+    res.json(auctions)
 
-}catch(error){
+  }catch(error){
 
-res.status(500).json({message:"Error fetching auctions"})
+    res.status(500).json({message:"Error fetching auctions"})
 
-}
-
-})
-
-
-// Market price
-
-router.get("/market-price", async(req,res)=>{
-
-try{
-
-const prices = await Auction.find({
-status:"closed"
-})
-
-res.json(prices)
-
-}catch(error){
-
-res.status(500).json({message:"Error fetching prices"})
-
-}
+  }
 
 })
 
-module.exports = router
+
+// GET BIDS OF AUCTION
+router.get("/bids/:id", async(req,res)=>{
+
+  try{
+
+    const bids = await Bid.find({
+      auctionId:req.params.id
+    }).sort({_id:-1})
+
+    res.json(bids)
+
+  }catch(error){
+
+    res.status(500).json({message:"Error fetching bids"})
+
+  }
+
+})
+
+module.exports = router;

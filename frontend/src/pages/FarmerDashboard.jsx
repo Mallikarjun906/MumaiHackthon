@@ -1,18 +1,21 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react"
+import axios from "axios"
+
 import {
 LayoutDashboard,
 PlusCircle,
 List,
-TrendingUp
-} from "lucide-react";
+Sprout,
+FlaskConical,
+Leaf,
+MessageCircle
+} from "lucide-react"
 
 export default function FarmerDashboard(){
 
 const [page,setPage] = useState("dashboard")
-const [auctions,setAuctions] = useState([])
 
-/* FORM STATES */
+/* AUCTIONS */
 
 const [cropName,setCropName] = useState("")
 const [quantity,setQuantity] = useState("")
@@ -21,6 +24,18 @@ const [farmerName,setFarmerName] = useState("")
 const [farmerPhone,setFarmerPhone] = useState("")
 const [startTime,setStartTime] = useState("")
 const [endTime,setEndTime] = useState("")
+
+const [auctions,setAuctions] = useState([])
+const [fertilizers,setFertilizers] = useState([])
+
+/* ORDER STATES */
+
+const [showOrder,setShowOrder] = useState(false)
+const [selectedProduct,setSelectedProduct] = useState(null)
+
+const [phone,setPhone] = useState("")
+const [location,setLocation] = useState("")
+const [paymentMethod,setPaymentMethod] = useState("COD")
 
 /* FETCH AUCTIONS */
 
@@ -39,14 +54,44 @@ const res = await axios.get(
 setAuctions(res.data)
 
 }catch(err){
-console.log("Fetch error")
+console.log("Error fetching auctions")
 }
 
 }
+
+/* FETCH FERTILIZERS */
+
+const fetchFertilizers = async()=>{
+
+try{
+
+const res = await axios.get(
+"http://localhost:5001/api/products"
+)
+
+setFertilizers(res.data)
+
+}catch(err){
+console.log("Error fetching fertilizers")
+}
+
+}
+
+/* PAGE CHANGE */
+
+useEffect(()=>{
+
+if(page==="fertilizers"){
+fetchFertilizers()
+}
+
+},[page])
 
 /* CREATE AUCTION */
 
 const createAuction = async()=>{
+
+try{
 
 await axios.post(
 "http://localhost:5001/api/auction/create",
@@ -61,17 +106,82 @@ endTime
 }
 )
 
+alert("Auction Created")
+
 fetchAuctions()
 
-alert("Auction Created")
+}catch(err){
+
+alert("Error creating auction")
 
 }
 
-/* STATS */
+}
 
-const active = auctions.filter(a=>new Date(a.endTime)>new Date()).length
-const closed = auctions.filter(a=>new Date(a.endTime)<new Date()).length
-const highest = auctions.reduce((max,a)=>Math.max(max,a.highestBid||0),0)
+/* PLACE ORDER */
+
+const placeOrder = async()=>{
+
+if(paymentMethod==="UPI"){
+
+const payment = await axios.post(
+"http://localhost:5001/api/orders/create-payment",
+{
+amount:selectedProduct.price
+}
+)
+
+const options = {
+
+key:"YOUR_RAZORPAY_KEY",
+
+amount:payment.data.amount,
+
+order_id:payment.data.id,
+
+handler:async function(){
+
+await axios.post(
+"http://localhost:5001/api/orders/create",
+{
+productId:selectedProduct._id,
+phone,
+location,
+paymentMethod:"UPI"
+}
+)
+
+alert("Order Successful")
+
+setShowOrder(false)
+
+}
+
+}
+
+const rzp = new window.Razorpay(options)
+
+rzp.open()
+
+}else{
+
+await axios.post(
+"http://localhost:5001/api/orders/create",
+{
+productId:selectedProduct._id,
+phone,
+location,
+paymentMethod:"COD"
+}
+)
+
+alert("Order Placed")
+
+setShowOrder(false)
+
+}
+
+}
 
 return(
 
@@ -79,47 +189,39 @@ return(
 
 {/* SIDEBAR */}
 
-<div className="w-64 bg-green-900 text-white p-6">
+<div className="w-64 bg-green-800 text-white p-6 space-y-6">
 
-<h1 className="text-xl font-bold mb-6">
-Farmer Panel
-</h1>
+<h2 className="text-2xl font-bold">
+Smart Agri
+</h2>
 
-<div className="space-y-3">
-
-<button
-onClick={()=>setPage("dashboard")}
-className="flex items-center gap-2 w-full p-2 rounded hover:bg-green-800"
->
-<LayoutDashboard size={18}/>
-Dashboard
+<button onClick={()=>setPage("dashboard")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<LayoutDashboard size={18}/> Dashboard
 </button>
 
-<button
-onClick={()=>setPage("create")}
-className="flex items-center gap-2 w-full p-2 rounded hover:bg-green-800"
->
-<PlusCircle size={18}/>
-Add Auction
+<button onClick={()=>setPage("createAuction")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<PlusCircle size={18}/> Create Auction
 </button>
 
-<button
-onClick={()=>setPage("list")}
-className="flex items-center gap-2 w-full p-2 rounded hover:bg-green-800"
->
-<List size={18}/>
-My Auctions
+<button onClick={()=>setPage("listItems")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<List size={18}/> My Listings
 </button>
 
-<button
-onClick={()=>setPage("market")}
-className="flex items-center gap-2 w-full p-2 rounded hover:bg-green-800"
->
-<TrendingUp size={18}/>
-Live Market
+<button onClick={()=>setPage("fertilizers")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<FlaskConical size={18}/> Buy Fertilizers
 </button>
 
-</div>
+<button onClick={()=>setPage("schemes")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<Leaf size={18}/> Government Schemes
+</button>
+
+<button onClick={()=>setPage("soil")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<Sprout size={18}/> Soil Analyzer
+</button>
+
+<button onClick={()=>setPage("chat")} className="flex items-center gap-2 w-full hover:bg-green-700 p-2 rounded">
+<MessageCircle size={18}/> Farmer Chat
+</button>
 
 </div>
 
@@ -127,118 +229,36 @@ Live Market
 
 <div className="flex-1 p-8">
 
-{/* HEADER */}
-
-<h1 className="text-2xl font-bold mb-6">
-Farmer Dashboard
-</h1>
-
 {/* DASHBOARD */}
 
-{page==="dashboard" && (
+{page==="dashboard" &&(
 
 <div>
 
-{/* STATS */}
+<h1 className="text-3xl font-bold mb-6">
+Farmer Dashboard
+</h1>
 
-<div className="grid md:grid-cols-4 gap-6 mb-6">
-
-<div className="bg-white p-6 rounded shadow">
-<p className="text-gray-500">Total Auctions</p>
-<h2 className="text-2xl font-bold">
-{auctions.length}
-</h2>
-</div>
+<div className="grid md:grid-cols-3 gap-6">
 
 <div className="bg-white p-6 rounded shadow">
-<p className="text-gray-500">Active Auctions</p>
-<h2 className="text-2xl font-bold">
-{active}
-</h2>
+<h3 className="font-bold">Total Auctions</h3>
+<p className="text-2xl">{auctions.length}</p>
 </div>
 
 <div className="bg-white p-6 rounded shadow">
-<p className="text-gray-500">Closed Auctions</p>
-<h2 className="text-2xl font-bold">
-{closed}
-</h2>
+<h3 className="font-bold">Active Auctions</h3>
+<p className="text-2xl">
+{auctions.filter(a=>new Date(a.endTime)>new Date()).length}
+</p>
 </div>
 
 <div className="bg-white p-6 rounded shadow">
-<p className="text-gray-500">Highest Bid</p>
-<h2 className="text-2xl font-bold">
-₹{highest}
-</h2>
+<h3 className="font-bold">Closed Auctions</h3>
+<p className="text-2xl">
+{auctions.filter(a=>new Date(a.endTime)<new Date()).length}
+</p>
 </div>
-
-</div>
-
-{/* TABLE */}
-
-<div className="bg-white rounded shadow">
-
-<table className="w-full">
-
-<thead className="bg-gray-100">
-
-<tr>
-
-<th className="p-3 text-left">Crop Name</th>
-<th>Quantity</th>
-<th>Base Price</th>
-<th>Highest Bid</th>
-<th>Bidder</th>
-<th>Status</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{auctions.map(a=>{
-
-const closed = new Date(a.endTime)<new Date()
-
-return(
-
-<tr key={a._id} className="border-t">
-
-<td className="p-3">{a.cropName}</td>
-
-<td>{a.quantity} kg</td>
-
-<td>₹{a.basePrice}</td>
-
-<td className="text-green-600 font-semibold">
-₹{a.highestBid || a.basePrice}
-</td>
-
-<td>{a.highestBidder || "--"}</td>
-
-<td>
-
-{closed ? (
-<span className="bg-gray-200 px-3 py-1 rounded text-sm">
-Closed
-</span>
-):(
-<span className="bg-green-600 text-white px-3 py-1 rounded text-sm">
-Active
-</span>
-)}
-
-</td>
-
-</tr>
-
-)
-
-})}
-
-</tbody>
-
-</table>
 
 </div>
 
@@ -248,64 +268,33 @@ Active
 
 {/* CREATE AUCTION */}
 
-{page==="create" && (
+{page==="createAuction" &&(
 
 <div className="bg-white p-6 rounded shadow max-w-xl">
 
-<h2 className="text-xl font-bold mb-4">
-Add Auction
-</h2>
+<h1 className="text-2xl font-bold mb-6">
+Create Auction
+</h1>
 
-<input
-placeholder="Farmer Name"
-onChange={(e)=>setFarmerName(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input placeholder="Farmer Name" onChange={(e)=>setFarmerName(e.target.value)} className="border p-2 w-full mb-3"/>
 
-<input
-placeholder="Phone"
-onChange={(e)=>setFarmerPhone(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input placeholder="Farmer Phone" onChange={(e)=>setFarmerPhone(e.target.value)} className="border p-2 w-full mb-3"/>
 
-<input
-placeholder="Crop Name"
-onChange={(e)=>setCropName(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input placeholder="Crop Name" onChange={(e)=>setCropName(e.target.value)} className="border p-2 w-full mb-3"/>
 
-<input
-placeholder="Quantity"
-onChange={(e)=>setQuantity(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input placeholder="Quantity" onChange={(e)=>setQuantity(e.target.value)} className="border p-2 w-full mb-3"/>
 
-<input
-placeholder="Base Price"
-onChange={(e)=>setBasePrice(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input placeholder="Base Price" onChange={(e)=>setBasePrice(e.target.value)} className="border p-2 w-full mb-3"/>
 
 <label>Start Time</label>
 
-<input
-type="datetime-local"
-onChange={(e)=>setStartTime(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input type="datetime-local" onChange={(e)=>setStartTime(e.target.value)} className="border p-2 w-full mb-3"/>
 
 <label>End Time</label>
 
-<input
-type="datetime-local"
-onChange={(e)=>setEndTime(e.target.value)}
-className="border p-2 w-full mb-3"
-/>
+<input type="datetime-local" onChange={(e)=>setEndTime(e.target.value)} className="border p-2 w-full mb-3"/>
 
-<button
-onClick={createAuction}
-className="bg-green-700 text-white p-3 rounded w-full"
->
+<button onClick={createAuction} className="bg-green-600 text-white p-3 rounded w-full">
 Create Auction
 </button>
 
@@ -313,78 +302,51 @@ Create Auction
 
 )}
 
-{/* MY AUCTIONS */}
+{/* FERTILIZERS */}
 
-{page==="list" && (
-
-<div className="grid md:grid-cols-3 gap-6">
-
-{auctions.map(a=>{
-
-const closed = new Date(a.endTime)<new Date()
-
-return(
-
-<div
-key={a._id}
-className="bg-white p-6 rounded shadow"
->
-
-<h2 className="text-xl font-bold">
-{a.cropName}
-</h2>
-
-<p>Quantity: {a.quantity}kg</p>
-
-<p className="text-green-600 font-semibold">
-₹{a.basePrice}
-</p>
-
-{closed ? (
-<p className="text-red-500">Closed</p>
-):(
-<p className="text-green-600">Live</p>
-)}
-
-</div>
-
-)
-
-})}
-
-</div>
-
-)}
-
-{/* LIVE MARKET */}
-
-{page==="market" && (
+{page==="fertilizers" &&(
 
 <div>
 
-<h2 className="text-xl font-bold mb-4">
-Live Market Prices
-</h2>
+<h1 className="text-2xl font-bold mb-6">
+Buy Fertilizers
+</h1>
 
-<div className="grid md:grid-cols-4 gap-6">
+<div className="grid md:grid-cols-3 gap-6">
 
-{[
-{crop:"Wheat",price:2275},
-{crop:"Rice",price:3850},
-{crop:"Cotton",price:6380},
-{crop:"Soybean",price:4600}
-].map((c,i)=>(
+{fertilizers.map((f)=>(
+<div key={f._id} className="bg-white p-6 rounded shadow">
 
-<div key={i} className="bg-white p-6 rounded shadow">
+{f.image &&(
+<img
+src={`http://localhost:5001${f.image}`}
+className="h-32 w-full object-cover rounded mb-3"
+/>
+)}
 
-<h3 className="font-bold">{c.crop}</h3>
+<h2 className="font-bold text-lg">{f.name}</h2>
 
-<p className="text-green-600 text-xl mt-2">
-₹{c.price}
-</p>
+<p className="text-gray-500 text-sm">{f.description}</p>
+
+<p className="text-green-600 font-bold mt-2">₹{f.price}</p>
+
+<p className="text-gray-400 text-sm">Stock: {f.quantity}</p>
+
+<button
+onClick={()=>{
+
+setSelectedProduct(f)
+setShowOrder(true)
+
+}}
+className="mt-3 bg-green-600 text-white px-4 py-2 rounded w-full"
+>
+
+Buy Now
+
+</button>
 
 </div>
-
 ))}
 
 </div>
@@ -394,6 +356,55 @@ Live Market Prices
 )}
 
 </div>
+
+{/* ORDER MODAL */}
+
+{showOrder &&(
+
+<div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+
+<div className="bg-white p-6 rounded w-96">
+
+<h2 className="text-xl font-bold mb-4">
+Complete Order
+</h2>
+
+<input
+placeholder="Phone Number"
+className="border p-2 w-full mb-3"
+onChange={(e)=>setPhone(e.target.value)}
+/>
+
+<input
+placeholder="Delivery Location"
+className="border p-2 w-full mb-3"
+onChange={(e)=>setLocation(e.target.value)}
+/>
+
+<select
+className="border p-2 w-full mb-4"
+onChange={(e)=>setPaymentMethod(e.target.value)}
+>
+
+<option value="COD">Cash on Delivery</option>
+<option value="UPI">UPI Payment</option>
+
+</select>
+
+<button
+onClick={placeOrder}
+className="bg-green-600 text-white px-4 py-2 rounded w-full"
+>
+
+Place Order
+
+</button>
+
+</div>
+
+</div>
+
+)}
 
 </div>
 
