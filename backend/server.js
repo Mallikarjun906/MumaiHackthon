@@ -4,11 +4,12 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 
+/* DB */
 const connectDB = require("./src/config/db");
 
 /* ROUTES */
-
 const authRoutes = require("./src/routes/authRoutes");
 const cropRoutes = require("./src/routes/cropRoutes");
 const fertilizerRoutes = require("./src/routes/fertilizerRoutes");
@@ -17,24 +18,28 @@ const productRoutes = require("./src/routes/productRoutes");
 const auctionRoutes = require("./src/routes/auctionRoutes");
 
 /* SOCKET */
-
 const auctionSocket = require("./src/socket/auctionSocket");
 
-/* CONNECT DATABASE */
+/* INIT */
+const app = express();
+const server = http.createServer(app);
 
+/* CONNECT DATABASE */
 connectDB();
 
-const app = express();
-
 /* MIDDLEWARE */
+app.use(cors({
+  origin: "*", // later restrict for frontend URL
+  credentials: true
+}));
 
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static("uploads"));
 
-/* API ROUTES */
+/* STATIC */
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+/* ROUTES */
 app.get("/", (req, res) => {
   res.send("🌾 Agri Marketplace API Running...");
 });
@@ -46,12 +51,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auction", auctionRoutes);
 
-/* SERVER */
-
-const server = http.createServer(app);
-
 /* SOCKET.IO */
-
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -61,10 +61,16 @@ const io = new Server(server, {
 
 auctionSocket(io);
 
+/* ERROR HANDLER (IMPORTANT FOR DEPLOYMENT) */
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
+  res.status(500).json({ message: "Server Error" });
+});
+
+/* PORT (Railway uses dynamic port) */
+const PORT = process.env.PORT || 5000;
+
 /* START SERVER */
-
-const PORT = process.env.PORT || 5001;
-
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
