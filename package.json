@@ -3,5 +3,22 @@
     "axios": "^1.13.6",
     "framer-motion": "^12.36.0",
     "lucide-react": "^0.577.0"
-  }
+  },
+  "name": "mumaihackthon",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mallikarjun906/MumaiHackthon.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mallikarjun906/MumaiHackthon/issues"
+  },
+  "homepage": "https://github.com/Mallikarjun906/MumaiHackthon#readme",
+  "description": ""
 }
