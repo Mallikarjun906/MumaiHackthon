@@ -185,4 +185,100 @@ router.post("/login", async (req, res) => {
 });
 
 
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// ================= FORGOT PASSWORD =================
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email)
+      return res.status(400).json({ message: "Email required" });
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    user.otpExpire = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    await sendEmail(
+      email,
+      "Password Reset OTP",
+      `<h3>Your OTP: ${otp}</h3><p>Valid for 10 minutes</p>`
+    );
+
+    res.json({ message: "OTP sent successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+// ================= RESET PASSWORD =================
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword)
+      return res.status(400).json({ message: "All fields required" });
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ message: "User not found" });
+
+    if (user.otp !== otp.toString())
+      return res.status(400).json({ message: "Invalid OTP" });
+
+    if (user.otpExpire < Date.now())
+      return res.status(400).json({ message: "OTP expired" });
+
+    if (!isStrongPassword(newPassword))
+      return res.status(400).json({
+        message: "Password must contain 8+ characters, uppercase, lowercase, number and special character",
+      });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.otp = undefined;
+    user.otpExpire = undefined;
+    await user.save();
+
+    await sendEmail(
+      user.email,
+      "🔐 Password Reset Successful - HMS",
+      `
+      <div style="font-family: Arial; padding: 20px;">
+        <h2>Hello ${user.name},</h2>
+        <p>Your password has been successfully changed.</p>
+        <p>If you did not perform this action, please contact support immediately.</p>
+        <br/>
+        <b>Stay secure,</b><br/>
+        HMS Security Team
+      </div>
+      `
+    );
+
+    res.json({ message: "Password reset successful" });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+module.exports = router;
+
+
 module.exports = router;
